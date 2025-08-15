@@ -24,8 +24,8 @@ const fetchLastSelectedOperatorABI = `[
 	{"inputs":[],"name":"getLastSelectedOperator","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
 ]`
 
-func ListenOperatorSelected(rpcURL string, contractAddress common.Address) {
-	client, err := ethclient.Dial(rpcURL)
+func ListenOperatorSelected(rpcWSURL string, rpcURL string, contractAddress common.Address) {
+	wsclient, err := ethclient.Dial(rpcWSURL)
 	if err != nil {
 		log.Fatal("Failed to connect to Ethereum client:", err)
 	}
@@ -40,7 +40,7 @@ func ListenOperatorSelected(rpcURL string, contractAddress common.Address) {
 	}
 
 	logs := make(chan types.Log)
-	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
+	sub, err := wsclient.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
 		log.Fatal("Failed to subscribe to logs:", err)
 	}
@@ -72,16 +72,16 @@ func ListenOperatorSelected(rpcURL string, contractAddress common.Address) {
 				shares := SplitSecret(privateKey.D, 5, 3)
 				fmt.Println("Shares:", shares)
 
-				ips, err := FetchOperatorIPs(rpcURL, common.HexToAddress("0xYourContractAddress"))
-				if err != nil {
-					log.Fatal(err)
-				}
-				i := 0
-				for addr, ip := range ips {
-					share := shares[i]
-					sendPrivateKey(ip, ethAddress, pvtKeyToString(share))
-					fmt.Printf("%s => %s\n", addr.Hex(), ip)
-				}
+				// ips, err := FetchOperatorIPs(rpcURL, common.HexToAddress("0x5FbDB2315678afecb367f032d93F642f64180aa3"))
+				// if err != nil {
+				// 	log.Fatal(err)
+				// }
+				// i := 0
+				// for addr, ip := range ips {
+				// 	share := shares[i]
+				// 	sendPrivateKey(ip, ethAddress, pvtKeyToString(share))
+				// 	fmt.Printf("%s => %s\n", addr.Hex(), ip)
+				// }
 			} else {
 				aggregator = event.SelectedOperator.Hex()
 			}

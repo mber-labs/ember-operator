@@ -22,7 +22,8 @@ var (
 	ethAddress      string
 	privateKey      *ecdsa.PrivateKey
 	ethRPCUrl       = "http://localhost:8545"
-	contractAddress = common.HexToAddress("0xYourEmberManagerContractAddress")
+	ethWSRPCUrl     = "ws://localhost:8545"
+	contractAddress = common.HexToAddress("0x5FbDB2315678afecb367f032d93F642f64180aa3")
 	emberManagerABI = `[{"inputs":[],"name":"registerOperator","outputs":[],"stateMutability":"payable","type":"function"}]`
 	chainID         = big.NewInt(1337) // Replace with your chain ID
 	aggregator      string
@@ -37,6 +38,7 @@ func ethAddressHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("📤 Registering operator...")
 	go func() {
 		err := registerOperator()
 		if err != nil {
@@ -93,7 +95,11 @@ func registerOperator() error {
 
 func main() {
 	var err error
-	privateKey, err = crypto.GenerateKey()
+	// privateKey, err = crypto.GenerateKey()
+
+	hexKey := "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+	privateKey, err = crypto.HexToECDSA(hexKey)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +120,7 @@ func main() {
 	http.HandleFunc("/eth-address", ethAddressHandler)
 	http.HandleFunc("/btc-key", storePrivateKey)
 
-	ListenOperatorSelected(ethRPCUrl, contractAddress)
+	go ListenOperatorSelected(ethWSRPCUrl, ethRPCUrl, contractAddress)
 
 	log.Fatal(http.Serve(listener, nil))
 }
